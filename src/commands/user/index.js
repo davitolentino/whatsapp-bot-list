@@ -1,4 +1,5 @@
 const handleRenderList = require("../../utils/renderList");
+const sortList = require("../../utils/sortList");
 
 const renderListsByGroup = (client, msg, chat, Groups) => {
   const group = Groups.find((group) => group.id === chat.id.user);
@@ -29,16 +30,12 @@ const showListGroup = (client, msg, chat, Groups) => {
       return client.sendMessage(msg.from, "Nenhuma lista no grupo!");
 
     const index =
-      String(msg.body).replace("mostrarlista", "").replace(" ", "") || null;
+      String(msg.body).replace("MOSTRARLISTA", "").replace(" ", "") || null;
 
     handleRenderList(client, msg, group, index ? Number(index) : null);
   } else {
     client.sendMessage(msg.from, "Grupo com nenhuma lista criada");
   }
-};
-
-const sendCommandsForUser = (client, contact) => {
-  client.sendMessage(contact.id._serialized, "message");
 };
 
 const populateList = (client, msg, chat, Groups, contact) => {
@@ -54,12 +51,14 @@ const populateList = (client, msg, chat, Groups, contact) => {
     const listSelected =
       group.lists[indexList !== null ? indexList - 1 : group.lists.length - 1];
 
-    const existUserIndex = listSelected.list.findIndex((list) =>
+    let existUserIndex = listSelected.list.findIndex((list) =>
       list.body.includes(`(${contact.number})`)
     );
 
+    if (existUserIndex === -1 && msg.body.includes("NAOVOU")) return;
+
     if (listSelected.status || existUserIndex !== -1) {
-      if (existUserIndex === -1) {
+      if (existUserIndex === -1 && !msg.body.includes("NAOVOU")) {
         listSelected.list.push({
           body: `${contact.name} (${contact.number})${
             msg.body.includes("PENDENTE")
@@ -69,16 +68,16 @@ const populateList = (client, msg, chat, Groups, contact) => {
               : ""
           }`,
         });
+
+        listSelected.list = sortList(listSelected);
+
+        existUserIndex = listSelected.list.findIndex((list) =>
+          list.body.includes(`(${contact.number})`)
+        );
       } else {
         if (
           msg.body.includes("PENDENTE") &&
           listSelected.list[existUserIndex].body.includes("(pendente)")
-        )
-          return;
-
-        if (
-          msg.body.includes("HORAS") &&
-          listSelected.list[existUserIndex].body.includes("(Horas: ")
         )
           return;
 
@@ -98,6 +97,12 @@ const populateList = (client, msg, chat, Groups, contact) => {
               : ""
           }`,
         };
+
+        listSelected.list = sortList(listSelected);
+
+        existUserIndex = listSelected.list.findIndex((list) =>
+          list.body.includes(`(${contact.number})`)
+        );
       }
     } else if (
       msg.body.includes("EUVOU") ||
@@ -111,7 +116,9 @@ const populateList = (client, msg, chat, Groups, contact) => {
     }
 
     if (msg.body.includes("NAOVOU") && existUserIndex > 0) {
-      listSelected.list.splice(existUserIndex, 1);
+      listSelected.list = listSelected.list.filter(
+        (_, index) => index !== existUserIndex
+      );
     }
 
     if (
@@ -127,18 +134,134 @@ const populateList = (client, msg, chat, Groups, contact) => {
   }
 };
 
+const aliasUserForGroup = (client, msg, chat, Groups, contact) => {
+  const group = Groups.find((group) => group.id === chat.id.user);
+
+  if (group) {
+    const splitMessage = msg.body.split(" ");
+
+    if (splitMessage.length > 1) {
+      const userExistNickname = group.nicknames.find(
+        (nickname) => nickname.number === String(contact.id.user)
+      );
+
+      if (splitMessage.length > 2)
+        for (let i = 2; i < splitMessage.length; i++) {
+          splitMessage[1] += ` ${splitMessage[i]}`;
+        }
+
+      if (userExistNickname) {
+        userExistNickname.number = String(contact.id.user);
+        userExistNickname.nickname = splitMessage[1];
+      } else {
+        group.nicknames.push({
+          number: String(contact.id.user),
+          nickname: splitMessage[1],
+        });
+      }
+
+      client.sendMessage(
+        contact.id._serialized,
+        "Apelido adicionado com sucesso!"
+      );
+    }
+  } else {
+    client.sendMessage(
+      contact.id._serialized,
+      "Grupo com nenhuma lista criada"
+    );
+  }
+};
+
+const removeUserForGroup = (client, msg, chat, Groups, contact) => {
+  const group = Groups.find((group) => group.id === chat.id.user);
+
+  if (group) {
+    const userExistNickname = group.nicknames.find(
+      (nickname) => nickname.number === contact.id.user
+    );
+
+    if (userExistNickname) {
+      group.nicknames = group.nicknames.filter(
+        (nickname) => nickname.number !== contact.id.user
+      );
+
+      client.sendMessage(
+        contact.id._serialized,
+        "Apelido retirado com sucesso!"
+      );
+    } else {
+      client.sendMessage(
+        contact.id._serialized,
+        "Voce não possui nenhum apelido"
+      );
+    }
+  } else {
+    client.sendMessage(
+      contact.id._serialized,
+      "Grupo com nenhuma lista criada"
+    );
+  }
+};
+
+const populateGuestVirtual = (client, msg, chat, Groups) => {
+  const group = Groups.find((group) => group.id === chat.id.user);
+
+  if (group.id !== "5519999719079-1624281440") return true;
+
+  if (group) {
+    const indexList = null;
+
+    const listSelected =
+      group.lists[indexList !== null ? indexList - 1 : group.lists.length - 1];
+
+    if (msg.body.includes("!convidado ")) {
+      listSelected.list.push({
+        body: `${msg.body.replace("!convidado ", "")} (convidado)`,
+      });
+    }
+
+    listSelected.list = sortList(listSelected);
+
+    handleRenderList(client, msg, group, null);
+  } else {
+    client.sendMessage(msg.from, "Grupo com nenhuma lista criada");
+  }
+};
+
 const userUseCases = (client, msg, chat, Groups, contact) => {
   if (msg.body === "listar") renderListsByGroup(client, msg, chat, Groups);
 
-  if (msg.body === "comandos") sendCommandsForUser(client, contact);
+  if (msg.body.startsWith("!convidado "))
+    populateGuestVirtual(client, msg, chat, Groups);
 
-  if (msg.body.startsWith("mostrarlista"))
-    showListGroup(client, msg, chat, Groups);
+  const aux = msg.body;
 
   msg.body = String(msg.body)
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase();
+
+  if (msg.body === "NAO VOU" || msg.body === "EU VOU") {
+    msg.body = msg.body.replace(" ", "");
+  }
+
+  if (msg.body.startsWith("!APELIDO ")) {
+    msg.body = aux;
+    aliasUserForGroup(client, msg, chat, Groups, contact);
+  }
+
+  if (msg.body.startsWith("!REMOVERAPELIDO"))
+    removeUserForGroup(client, msg, chat, Groups, contact);
+
+  if (msg.body.startsWith("MOSTRARLISTA"))
+    showListGroup(client, msg, chat, Groups);
+
+  if (
+    msg.body.startsWith("PENDENTE") &&
+    chat.id.user === "5519999719079-1624281440"
+  )
+    return;
 
   if (
     msg.body.startsWith("NAOVOU") ||
