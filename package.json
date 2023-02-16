@@ -12,18 +12,23 @@
   "type": "commonjs",
   "dependencies": {
     "@pedroslopez/moduleraid": "^5.0.2",
+    "axios": "^1.3.2",
     "date-fns": "^2.29.3",
     "express": "^4.18.2",
     "fluent-ffmpeg": "^2.1.2",
     "fs": "0.0.1-security",
     "jsqr": "^1.3.1",
     "mime": "^3.0.0",
+    "mime-types": "^2.1.35",
     "node-cron": "^3.0.2",
     "node-fetch": "^2.6.5",
     "node-webpmux": "^3.1.3",
+    "openai": "^3.1.0",
     "puppeteer": "^13.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "random-memes": "^3.1.7",
     "uuid": "^8.3.2",
-    "whatsapp-web.js": "^1.18.4"
+    "whatsapp-web.js": "^1.19.4"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.6.2",

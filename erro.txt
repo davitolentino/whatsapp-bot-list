@@ -1,0 +1,7 @@
+
+    delete .wwebjs_auth folder
+    delete node_modules folder
+    update package to version "whatsapp-web.js": "^1.18.4"
+    run yarn install or npm install
+    run app
+

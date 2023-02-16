@@ -1,6 +1,7 @@
 const { messageMediaFromFilePath } = require("../../utils/messageMedia");
 const { join } = require("path");
 const handleRenderList = require("../../utils/renderList");
+const handleRenderTotalList = require("../../utils/renderListTotal");
 const { renderListsByGroup } = require("../user");
 const sortList = require("../../utils/sortList");
 
@@ -68,6 +69,11 @@ const createListAndGroup = (client, msg, chat, Groups) => {
 
     if (group.id === "120363042517201636" || group.id === "120363021996082180")
       group.lists[0].list.push({ body: "Michael 🏐🐾 (5519999222004)" });
+
+    if (group.id === "5519999719079-1624281440") {
+      group.lists[0].list.push({ body: "Paulo Miloch (5519989048383)" });
+      group.lists[0].list.push({ body: "Welington Nunes (5519998060681)" });
+    }
   } else {
     Groups.push({
       id: chat.id.user,
@@ -95,7 +101,9 @@ const editListAndGroup = (client, msg, chat, Groups) => {
     return client.sendMessage(msg.from, "Grupo não possui uma lista");
 
   if (group) {
-    group.lists[0].list[0].body = msg.body.replace("!editar ", "");
+    group.lists[0].list[0].body = String(
+      msg.body?.replace("!editar ", "")
+    )?.replace("!alterar ", "");
   }
 
   handleRenderList(client, msg, group ? group : Groups[Groups.length - 1]);
@@ -261,11 +269,11 @@ const sortPlayers = (client, msg, chat, Groups) => {
     const participants = [];
 
     if (presents.length >= 12) {
-      const users = ['19981413209', '19983184068', '19999222004']
+      const users = ["19981413209", "19983184068", "19999222004"];
 
       const usersPresent = presents.filter((present) =>
-        users.some((user) => present.body.includes(user)),
-      )
+        users.some((user) => present.body.includes(user))
+      );
 
       if (usersPresent.length) {
         usersPresent
@@ -274,10 +282,10 @@ const sortPlayers = (client, msg, chat, Groups) => {
             participants.push({
               ...present,
               index: presents.findIndex((presentList) =>
-                presentList.body.includes(present.body),
+                presentList.body.includes(present.body)
               ),
-            }),
-          )
+            })
+          );
       }
 
       while (participants.length < 12) {
@@ -324,13 +332,15 @@ const populateUserVirtual = (client, msg, chat, Groups) => {
       });
 
       listSelected.list = sortList(listSelected);
+      client.sendMessage(msg.from, "Nome adicionado com sucesso");
     } else if (msg.body.includes("!del ")) {
       listSelected.list = listSelected.list.filter(
         (_, index) => index !== Number(msg.body.replace("!del ", ""))
       );
+      client.sendMessage(msg.from, "Nome retirado com sucesso");
     }
 
-    handleRenderList(client, msg, group);
+    // handleRenderList(client, msg, group);
   } else {
     client.sendMessage(msg.from, "Grupo com nenhuma lista criada");
   }
@@ -424,29 +434,30 @@ const sendCommandsForUser = (client, contact) => {
   client.sendMessage(
     contact.id._serialized,
     `\n*Usuario:*
-  \nDigite *listar* para visualizar as listas que foram criadas *(importante para pegar o numero da lista)*
-  \nDigite *mostrarlista x* para visualizar uma lista especifica, passando o numero da lista
-  \nDigite *euvou x* para entrar em uma lista, passando o numero na frente, entra em uma especifica (comando sem o numero, entra na ultima lista criada)
-  \nDigite *naovou x* para sair de uma lista, passando o numero na frente, sai de uma especifica (comando sem o numero, sai da ultima lista criada)
-  \nDigite *pendente x* para definir como talvez vá, passando o numero na frente, entra como pendente em uma lista especifica (comando sem o numero, fica pendente da ultima lista criada)
-  \nDigite *horas x* para entrar na lista, porem com uma data estipulada, (esse comando sempre vai ser da ultima lista criada)
-  \n*ADMIN:*
-  \nDigite *!notificar* para notificar todos os participantes do grupo
-  \nDigite *!criar x* para criar uma lista (A lista irá ser criado com o status de fechada)
-  \nDigite *!remover x* para remover uma lista
-  \nDigite *!remover all* para remover todas as listas
-  \nDigite *!abrir x* para abrir a lista, passando o numero da lista
-  \nDigite *!fechar x* para fechar a lista, passando o numero da lista
-  \nDigite *!reset x* para resetar a lista, passando o numero da lista
-  \nDigite *!add x* para adicionar na lista
-  \nDigite *!del x* para remover da lista, passando o numero da linha que mostra na lista
-  \nDigite *!apelido xxxxxxxxxxx xxxx* para adicionar um apelido ao usuario, passando o numero da pessoa depois de !apelido, e o nome na frente (Se a pessoa estiver em uma lista, devera recolocar)
-  \nDigite *!removerapelido xxxxxxxxxxx* para remover o apelido do usuario, passando o numero da pessoa depois de !removerapelido (Se a pessoa estiver em uma lista, devera recolocar)
+     \nDigite *mostrarlista* para visualizar uma lista de presença
+     \nDigite *euvou* para colocar seu nome na lista como *presente*
+     \nDigite *naovou* para remover seu nome da lista
+     \nDigite *pendente* para definir como talvez vá
+     \nDigite *horas 00h00* para entrar na lista, porem com uma hora estipulada
+     \nDigite *!convidado NOME* caso queira convidar alguém, coloque o nome do convidado na frente do comando
+     \nDigite *!apelido xxxxxxxxxx* defina um apelido para você ser identificado na lista
+     \nDigite *!removerapelido xxxxxxxxxxx* para remover seu apelido
+     \n*ADMIN:*
+     \nDigite *!criar x* para criar uma lista
+     \nDigite *!fechar* para fechar a lista
+     \nDigite *!add x* para adicionar na lista, coloque o nome da pessoa no lugar do x
+     \nDigite *!del x* para remover da lista, passando o nome da pessoa no lugar do x
+     \nDigite *!notificar* para notificar todos os participantes do grupo
+     \nDigite *!notificarlista* para notificar todos os participantes da lista atual
+     \nDigite *!substituir 12;20* substitui o usuário do ID 12 com o usuário do ID 20
+     \nDigite *!presente 1;5;7;10* da presença para os usuários com número 1,5,7 e 10. Para remover a presença, basta "dar presença" novamente.
+     \nDigite *!sortear* sorteia dois times para jogar. Funcional apenas quando tiver pelo menos 12 pessoas com presença.
+     \nDigite *!apelidoadmin 551900000000 xxxxxxxx* defina um apelido para o usuario de numero 551900000000, onde xxxxxxxx eh o apelido que deseja associar.
+     \nDigite *!removerapelidoadmin 551900000000* remove o apelido para o usuario de numero 551900000000
+     \nDigite *!noturno* habilita ou desabilita o modo noturno (somente admin enviar mensagem das 23h00 às 08h00)
   `
   );
 };
-
-
 
 const populateGuestVirtual = (client, msg, chat, Groups) => {
   const group = Groups.find((group) => group.id === chat.id.user);
@@ -473,12 +484,24 @@ const populateGuestVirtual = (client, msg, chat, Groups) => {
   }
 };
 
+const showTotalOfList = (client, msg, chat, Groups) => {
+  const group = Groups.find((group) => group.id === chat.id.user);
+
+  if (group) {
+    if (group.lists.length === 0)
+      return client.sendMessage(msg.from, "Nenhuma lista no grupo!");
+
+    handleRenderTotalList(client, msg, group, null);
+  } else {
+    client.sendMessage(msg.from, "Grupo com nenhuma lista criada");
+  }
+};
 
 const adminUseCases = (client, msg, chat, Groups, contact) => {
   if (msg.body === "!notificar") notificationAllUsers(chat);
 
-  if (msg.body.startsWith("!convidado "))
-    populateGuestVirtual(client, msg, chat, Groups);
+  // if (msg.body.startsWith("!convidado "))
+  //   populateGuestVirtual(client, msg, chat, Groups);
 
   if (msg.body.startsWith("!notificarlista "))
     notificationGroupUsers(chat, Groups, msg);
@@ -495,7 +518,7 @@ const adminUseCases = (client, msg, chat, Groups, contact) => {
   if (msg.body.startsWith("!criar "))
     createListAndGroup(client, msg, chat, Groups);
 
-  if (msg.body.startsWith("!editar "))
+  if (msg.body.startsWith("!editar ") || msg.body.startsWith("!alterar "))
     editListAndGroup(client, msg, chat, Groups);
 
   if (msg.body.startsWith("!abrir")) openList(client, msg, chat, Groups);
@@ -518,6 +541,8 @@ const adminUseCases = (client, msg, chat, Groups, contact) => {
   if (msg.body.startsWith("!sortear")) sortPlayers(client, msg, chat, Groups);
 
   if (msg.body === "!comandos") sendCommandsForUser(client, contact);
+
+  if (msg.body === "!total") showTotalOfList(client, msg, chat, Groups);
 };
 
 module.exports = {

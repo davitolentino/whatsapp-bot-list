@@ -1,12 +1,19 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const fs = require("fs");
+const qrcode = require("qrcode-terminal");
 
 const { adminUseCases } = require("./src/commands/admin");
 const { userUseCases } = require("./src/commands/user");
+const { othersUseCases } = require("./src/commands/others");
+const { join } = require("path");
+const { messageMediaFromFilePath } = require("./src/utils/messageMedia");
 
 const client = new Client({
   authStrategy: new LocalAuth(),
-  puppeteer: { headless: true },
+  puppeteer: {
+    headless: true,
+    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+  },
 });
 
 let isReady = false;
@@ -14,7 +21,7 @@ let isReady = false;
 client.initialize();
 
 client.on("qr", (qr) => {
-  console.log("QR RECEIVED", qr);
+  qrcode.generate(qr, { small: true });
 });
 
 client.on("authenticated", () => {
@@ -55,6 +62,10 @@ client.on("message", async (msg) => {
   const contact = await msg.getContact();
   contact.name = contact.name || contact.pushname || contact.shortName;
 
+  if (msg.body === "!ping") {
+    client.sendMessage(msg.from, `O Bot está Online!`);
+  }
+
   const chat = await msg.getChat();
 
   const group = Groups.find((group) => group.id === chat.id.user);
@@ -75,14 +86,48 @@ client.on("message", async (msg) => {
     adminUseCases(client, msg, chat, Groups, contact);
 
   userUseCases(client, msg, chat, Groups, contact);
+  othersUseCases(client, msg, chat, Groups, contact);
+
+  // if (msg.hasMedia) {
+  //   const mediaPath = "./assets/photo/";
+
+  //   msg.downloadMedia().then((media) => {
+  //     if (!fs.existsSync(mediaPath)) {
+  //       fs.mkdirSync(mediaPath);
+  //     }
+
+  //     const extension = mime.extension(media.mimetype);
+  //     const filename = new Date().getTime();
+  //     const fullFileName = mediaPath + filename + "." + extension;
+
+  //     try {
+  //       if (media.mimetype !== "image/webp")
+  //         fs.writeFileSync(fullFileName, media.data, { encoding: "base64" });
+
+  //       // MessageMedia.fromFilePath((filePath = fullFileName));
+
+  //       if (media.mimetype !== "image/webp")
+  //         client.sendMessage(
+  //           msg.from,
+  //           new MessageMedia(media.mimetype, media.data, filename),
+  //           {
+  //             sendMediaAsSticker: true,
+  //             stickerAuthor: "Criado por BOT",
+  //             stickerName: "Media",
+  //           }
+  //         );
+
+  //       if (media.mimetype !== "image/webp") fs.unlinkSync(fullFileName);
+  //     } catch (err) {}
+  //   });
+  // }
 
   if (group.votacao && msg.body.startsWith("!")) {
     const votacao = group.votacao;
 
-    const participant =
-      votacao?.participants?.find((participant) =>
-        participant?.number?.includes(contact.number)
-      );
+    const participant = votacao?.participants?.find((participant) =>
+      participant?.number?.includes(contact.number)
+    );
 
     msg.body = String(msg.body).toLowerCase();
 
@@ -107,7 +152,10 @@ client.on("message", async (msg) => {
         (participant) => participant.voto === "sexta"
       ).length;
 
-      client.sendMessage(msg.from, `*VOTOS APURADOS*\n \nSegunda: ${segunda}\nTerça:  ${terca}\nQuarta: ${quarta}\nQuinta: ${quinta}\nSexta: ${sexta}`);
+      client.sendMessage(
+        msg.from,
+        `*VOTOS APURADOS*\n \nSegunda: ${segunda}\nTerça:  ${terca}\nQuarta: ${quarta}\nQuinta: ${quinta}\nSexta: ${sexta}`
+      );
     }
 
     msg.body = msg.body.replace("!", "");
@@ -132,7 +180,7 @@ client.on("message", async (msg) => {
 });
 
 const cron = require("node-cron");
-const { format, isTuesday, isThursday } = require("date-fns");
+const { format } = require("date-fns");
 
 cron.schedule("* * * * *", async (date) => {
   try {
@@ -148,10 +196,20 @@ cron.schedule("* * * * *", async (date) => {
             true
           );
 
-          client.sendMessage(
-            group.serialized,
-            `🌒 MODO NOTURNO ATIVO (23h às 08h)`
+          const messageMedia = messageMediaFromFilePath(
+            join(__dirname, "assets", "noturno.jpg")
           );
+
+          client.sendMessage(group.serialized, messageMedia, {
+            sendMediaAsSticker: true,
+            stickerName: "Noturno",
+            stickerAuthor: "Criado por BOT",
+          });
+
+          // client.sendMessage(
+          //   group.serialized,
+          //   `🌒 MODO NOTURNO ATIVO (23h às 08h)`
+          // );
         });
       }
 
@@ -171,6 +229,7 @@ cron.schedule("* * * * *", async (date) => {
       // }
     }
   } catch (err) {
+    console.log(err);
     // console.log(err);
   }
 });

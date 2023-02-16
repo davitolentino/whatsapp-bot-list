@@ -1,0 +1,4 @@
+instalar o pacote qrencode
+rodar o node index.js e esperar ele mostrar o QR Code
+pegar e salvar em um arquivo chamado code
+rodar o comando: qrencode -t ansiutf8 < code

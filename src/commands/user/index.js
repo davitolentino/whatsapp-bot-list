@@ -74,6 +74,12 @@ const populateList = (client, msg, chat, Groups, contact) => {
         existUserIndex = listSelected.list.findIndex((list) =>
           list.body.includes(`(${contact.number})`)
         );
+
+        if (!msg.body.includes("NAOVOU"))
+          client.sendMessage(
+            msg.from,
+            `${contact.name}, você foi adicionada(o)/atualizada(o) na lista. Caso queira exibi-la, digite *mostrarlista*.`
+          );
       } else {
         if (
           msg.body.includes("PENDENTE") &&
@@ -103,6 +109,12 @@ const populateList = (client, msg, chat, Groups, contact) => {
         existUserIndex = listSelected.list.findIndex((list) =>
           list.body.includes(`(${contact.number})`)
         );
+
+        if (!msg.body.includes("NAOVOU"))
+          client.sendMessage(
+            msg.from,
+            `${contact.name}, você foi adicionada(o)/atualizada(o) na lista. Caso queira exibi-la, digite *mostrarlista*.`
+          );
       }
     } else if (
       msg.body.includes("EUVOU") ||
@@ -119,6 +131,12 @@ const populateList = (client, msg, chat, Groups, contact) => {
       listSelected.list = listSelected.list.filter(
         (_, index) => index !== existUserIndex
       );
+
+      listSelected.list = listSelected.list.filter(
+        (body) => !body?.body?.includes(`(convidado - ${contact.number})`)
+      );
+
+      client.sendMessage(msg.from, "Seu nome foi retirado da lista.");
     }
 
     if (
@@ -128,7 +146,7 @@ const populateList = (client, msg, chat, Groups, contact) => {
     )
       return;
 
-    handleRenderList(client, msg, group, indexList);
+    // handleRenderList(client, msg, group, indexList);
   } else {
     client.sendMessage(msg.from, "Grupo com nenhuma lista criada");
   }
@@ -204,10 +222,10 @@ const removeUserForGroup = (client, msg, chat, Groups, contact) => {
   }
 };
 
-const populateGuestVirtual = (client, msg, chat, Groups) => {
+const populateGuestVirtual = (client, msg, chat, Groups, contact) => {
   const group = Groups.find((group) => group.id === chat.id.user);
 
-  if (group.id !== "5519999719079-1624281440") return true;
+  // if (group.id !== "5519999719079-1624281440") return true;
 
   if (group) {
     const indexList = null;
@@ -217,11 +235,18 @@ const populateGuestVirtual = (client, msg, chat, Groups) => {
 
     if (msg.body.includes("!convidado ")) {
       listSelected.list.push({
-        body: `${msg.body.replace("!convidado ", "")} (convidado)`,
+        body: `${msg.body.replace("!convidado ", "")} - ${
+          contact.name
+        } (convidado) (convidado - ${contact.number})`,
       });
     }
 
     listSelected.list = sortList(listSelected);
+
+    client.sendMessage(
+      contact.id._serialized,
+      `${contact.name}, lembrando que seu convidado só poderá jogar no seu lugar, salvo com a permissão de um admin`
+    );
 
     handleRenderList(client, msg, group, null);
   } else {
@@ -233,7 +258,7 @@ const userUseCases = (client, msg, chat, Groups, contact) => {
   if (msg.body === "listar") renderListsByGroup(client, msg, chat, Groups);
 
   if (msg.body.startsWith("!convidado "))
-    populateGuestVirtual(client, msg, chat, Groups);
+    populateGuestVirtual(client, msg, chat, Groups, contact);
 
   const aux = msg.body;
 
@@ -254,7 +279,10 @@ const userUseCases = (client, msg, chat, Groups, contact) => {
   if (msg.body.startsWith("!REMOVERAPELIDO"))
     removeUserForGroup(client, msg, chat, Groups, contact);
 
-  if (msg.body.startsWith("MOSTRARLISTA"))
+  if (
+    msg.body.startsWith("MOSTRARLISTA") ||
+    msg.body.startsWith("!MOSTRARLISTA")
+  )
     showListGroup(client, msg, chat, Groups);
 
   if (

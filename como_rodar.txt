@@ -1,0 +1,5 @@
+instale o nodejs e o npm
+
+rode npm i (para instalar os modulos)
+rode npm up (para atualizar)
+rode node index.js no VSCODE para pegar o QRCODE... ta feito
