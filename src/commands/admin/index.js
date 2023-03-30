@@ -19,7 +19,7 @@ const notificationAllUsers = (chat) => {
     `,
     {
       mentions: chat.participants,
-      media: messageMedia,
+      // media: messageMedia,
     }
   );
 };
@@ -64,11 +64,14 @@ const createListAndGroup = (client, msg, chat, Groups) => {
       list: [{ body: msg.body.replace("!criar ", "") }],
     });
 
-    if (group.id === "120363021996082180")
+    if (group.id === "120363021996082180") {
       group.lists[0].list.push({ body: "David (5519981413209)" });
-
-    if (group.id === "120363042517201636" || group.id === "120363021996082180")
       group.lists[0].list.push({ body: "Michael 🏐🐾 (5519999222004)" });
+    }
+
+    if (group.id === "120363042517201636") {
+      group.lists[0].list.push({ body: "Poli" });
+    }
 
     if (group.id === "5519999719079-1624281440") {
       group.lists[0].list.push({ body: "Paulo Miloch (5519989048383)" });
@@ -532,8 +535,8 @@ const adminUseCases = (client, msg, chat, Groups, contact) => {
   if (msg.body.startsWith("!add ") || msg.body.startsWith("!del "))
     populateUserVirtual(client, msg, chat, Groups);
 
-  if (msg.body.startsWith("!presente "))
-    populatePresent(client, msg, chat, Groups);
+  // if (msg.body.startsWith("!presente "))
+  //   populatePresent(client, msg, chat, Groups);
 
   if (msg.body.startsWith("!substituir "))
     kawarimiUser(client, msg, chat, Groups);
@@ -547,4 +550,5 @@ const adminUseCases = (client, msg, chat, Groups, contact) => {
 
 module.exports = {
   adminUseCases,
+  populateUserVirtual,
 };

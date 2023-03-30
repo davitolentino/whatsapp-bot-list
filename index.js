@@ -85,7 +85,7 @@ client.on("message", async (msg) => {
   if (isAdmin || usersAdmin.includes(contact.id.user))
     adminUseCases(client, msg, chat, Groups, contact);
 
-  userUseCases(client, msg, chat, Groups, contact);
+  userUseCases(client, msg, chat, Groups, contact, isAdmin);
   othersUseCases(client, msg, chat, Groups, contact);
 
   // if (msg.hasMedia) {
