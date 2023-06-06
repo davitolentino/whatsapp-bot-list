@@ -80,7 +80,7 @@ client.on("message", async (msg) => {
 
   const isAdmin = chat.participants.find(
     (participant) => participant.id.user === contact.id.user
-  ).isAdmin;
+  )?.isAdmin;
 
   if (isAdmin || usersAdmin.includes(contact.id.user))
     adminUseCases(client, msg, chat, Groups, contact);
@@ -197,8 +197,9 @@ cron.schedule("* * * * *", async (date) => {
           );
 
           const messageMedia = messageMediaFromFilePath(
-            join(__dirname, "assets", "noturno.jpg")
+            join(__dirname, "assets", "close.gif")
           );
+		//"noturno.jpg"
 
           client.sendMessage(group.serialized, messageMedia, {
             sendMediaAsSticker: true,
@@ -218,6 +219,16 @@ cron.schedule("* * * * *", async (date) => {
           (await client.getChatById(group.serialized)).setMessagesAdminsOnly(
             false
           );
+
+          const messageMedia = messageMediaFromFilePath(
+            join(__dirname, "assets", "open.gif")
+          );
+
+          client.sendMessage(group.serialized, messageMedia, {
+            sendMediaAsSticker: true,
+            stickerName: "Noturno",
+            stickerAuthor: "Criado por BOT",
+          });
         });
       }
 
