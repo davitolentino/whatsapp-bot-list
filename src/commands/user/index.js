@@ -12,8 +12,7 @@ const renderListsByGroup = (client, msg, chat, Groups) => {
     group.lists.map((list) => {
       client.sendMessage(
         msg.from,
-        `${list.id} - ${list.list[0].body} (${
-          list.status ? "Lista Aberta" : "Lista Fechada"
+        `${list.id} - ${list.list[0].body} (${list.status ? "Lista Aberta" : "Lista Fechada"
         })`
       );
       return list;
@@ -63,13 +62,12 @@ const populateList = (client, msg, chat, Groups, contact) => {
     if (listSelected.status || existUserIndex !== -1) {
       if (existUserIndex === -1 && !msg.body.includes("NAOVOU")) {
         listSelected.list.push({
-          body: `${contact.name} (${contact.number})${
-            msg.body.includes("PENDENTE")
+          body: `${contact.name} (${contact.number})${msg.body.includes("PENDENTE")
               ? " (pendente)"
               : msg.body.includes("HORAS ") && msg.body.split(" ")[1]
-              ? ` (Horas: ${msg.body.split(" ")[1]})`
-              : ""
-          }`,
+                ? ` (Horas: ${msg.body.split(" ")[1]})`
+                : ""
+            }`,
         });
 
         listSelected.list = sortList(listSelected);
@@ -98,13 +96,12 @@ const populateList = (client, msg, chat, Groups, contact) => {
           return;
 
         listSelected.list[existUserIndex] = {
-          body: `${contact.name} (${contact.number})${
-            msg.body.includes("PENDENTE")
+          body: `${contact.name} (${contact.number})${msg.body.includes("PENDENTE")
               ? " (pendente)"
               : msg.body.includes("HORAS ") && msg.body.split(" ")[1]
-              ? ` (Horas: ${msg.body.split(" ")[1]})`
-              : ""
-          }`,
+                ? ` (Horas: ${msg.body.split(" ")[1]})`
+                : ""
+            }`,
         };
 
         listSelected.list = sortList(listSelected);
@@ -249,19 +246,17 @@ const populateGuestVirtual = (client, msg, chat, Groups, contact) => {
         "Você só pode adicionar convidados participando da lista!"
       );
     }
-    
+
     if (msg.body.includes("!convidado ")) {
       listSelected.list.push({
-        body: `${msg.body.replace("!convidado ", "")} - ${
-          contact.name
-        } (convidado - ${contact.number})`,
+        body: `${msg.body.replace("!convidado ", "")} - ${contact.name
+          } (convidado - ${contact.number})`,
       });
     }
     if (msg.body.includes("!convidada ")) {
       listSelected.list.push({
-        body: `${msg.body.replace("!convidada ", "")} - ${
-          contact.name
-        } (convidado - ${contact.number})`,
+        body: `${msg.body.replace("!convidada ", "")} - ${contact.name
+          } (convidado - ${contact.number})`,
       });
     }
 
@@ -403,10 +398,10 @@ const userUseCases = (client, msg, chat, Groups, contact, isAdmin) => {
   if (msg.body.startsWith("!REMOVERAPELIDO"))
     removeUserForGroup(client, msg, chat, Groups, contact);
 
-  if (
+  if ((
     msg.body.startsWith("MOSTRARLISTA") ||
     msg.body.startsWith("!MOSTRARLISTA") ||
-    msg.body.startsWith("ML")
+    msg.body.startsWith("ML")) && (chat.id.user !== 'id_aqui' || isAdmin)
   )
     showListGroup(client, msg, chat, Groups);
 
