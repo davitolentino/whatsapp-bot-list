@@ -61,7 +61,7 @@ const createListAndGroup = (client, msg, chat, Groups) => {
     group.lists.push({
       id: group.listLength,
       status: true,
-      list: [{ body: msg.body.replace("!criar ", "") }],
+      list: [{ body: (msg.body.replace("!criar ", "")).replace('!abrir', '') }],
     });
 
     if (group.id === "120363021996082180") {
@@ -88,7 +88,7 @@ const createListAndGroup = (client, msg, chat, Groups) => {
         {
           id: 1,
           status: false,
-          list: [{ body: msg.body.replace("!criar ", "") }],
+          list: [{ body: (msg.body.replace("!criar ", "")).replace('!abrir', '') }],
         },
       ],
     });
@@ -303,8 +303,7 @@ const sortPlayers = (client, msg, chat, Groups) => {
 
       participants.map(
         (participant, index) =>
-          (message += `${index === 0 ? "*TIME 1* \n \n" : ""}${
-            index === 6 ? "\n*TIME 2* \n \n" : ""
+        (message += `${index === 0 ? "*TIME 1* \n \n" : ""}${index === 6 ? "\n*TIME 2* \n \n" : ""
           }${participant.body} \n`)
       );
 
