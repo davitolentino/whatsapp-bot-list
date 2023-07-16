@@ -29,7 +29,7 @@ const handleRenderList = (client, msg, group, indexList = null) => {
 
   const confirms = groupList.list.filter(
     (list) =>
-      !list.body.includes("(pendente)") && !list.body.includes("(convidado)")
+      !list.body.includes("(pendente)") && !list.body.includes("(convidado -")
   );
 
   const pending = groupList.list.filter((list) =>
@@ -37,7 +37,7 @@ const handleRenderList = (client, msg, group, indexList = null) => {
   );
 
   const guest = groupList.list.filter((list) =>
-    list.body.includes("(convidado)")
+    list.body.includes("(convidado -")
   );
 
   const presents = groupList.list.filter((list) => list.body.includes("✅"));

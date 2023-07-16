@@ -254,14 +254,14 @@ const populateGuestVirtual = (client, msg, chat, Groups, contact) => {
       listSelected.list.push({
         body: `${msg.body.replace("!convidado ", "")} - ${
           contact.name
-        } (convidado) (convidado - ${contact.number})`,
+        } (convidado - ${contact.number})`,
       });
     }
     if (msg.body.includes("!convidada ")) {
       listSelected.list.push({
         body: `${msg.body.replace("!convidada ", "")} - ${
           contact.name
-        } (convidado) (convidado - ${contact.number})`,
+        } (convidado - ${contact.number})`,
       });
     }
 

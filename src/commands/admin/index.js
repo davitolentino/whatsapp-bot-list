@@ -475,7 +475,7 @@ const populateGuestVirtual = (client, msg, chat, Groups) => {
 
     if (msg.body.includes("!convidado ")) {
       listSelected.list.push({
-        body: `${msg.body.replace("!convidado ", "")} (convidado)`,
+        body: `${msg.body.replace("!convidado ", "")} (convidado - )`,
       });
     }
 

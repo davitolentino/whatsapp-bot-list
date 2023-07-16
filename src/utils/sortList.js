@@ -18,7 +18,7 @@ const sortList = (listSelected) => {
       return -1;
     }
 
-    if (a.body.includes("(pendente)") && b.body.includes("(convidado)"))
+    if (a.body.includes("(pendente)") && b.body.includes("(convidado -"))
       return -1;
 
     if (b.body.includes("(pendente)") || b.body.includes("convidado")) return 1;
